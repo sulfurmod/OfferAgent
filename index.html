@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>职说 · 老H — 你的求职陪练</title>
+<style>
+/* ====== Variables ====== */
+:root{
+  --bg:#080c14; --bg2:#0e1321; --card:rgba(255,255,255,.035);
+  --card-hover:rgba(255,255,255,.06); --border:rgba(255,255,255,.055);
+  --text:#e8ecf1; --text2:#8b95a5; --text3:#5a6475;
+  --accent:#3b82f6; --accent2:#60a5fa; --accent-glow:rgba(59,130,246,.18);
+  --green:#22c55e; --green-glow:rgba(34,197,94,.15);
+  --blue:#60a5fa; --blue-glow:rgba(96,165,250,.15);
+  --amber:#f59e0b; --purple:#8b5cf6; --radius:16px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 4px 16px rgba(0,0,0,.4);
+  --transition:.28s cubic-bezier(.4,0,.2,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh;
+  overflow-x:hidden; line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+/* Grid texture */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse at 50% 0%,#000 50%,transparent 100%);
+}
+
+/* ====== BG Orbs ====== */
+.bg-orb{
+  position:fixed;border-radius:50%;filter:blur(140px);opacity:.08;
+  pointer-events:none;z-index:0;
+}
+.bg-orb.o1{width:700px;height:700px;background:var(--accent);top:-250px;left:-200px}
+.bg-orb.o2{width:500px;height:500px;background:var(--purple);bottom:-200px;right:-150px}
+.bg-orb.o3{width:350px;height:350px;background:var(--accent);top:50%;left:55%;opacity:.05}
+
+/* ====== Top Bar ====== */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(14,19,33,.88); backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--border); padding:14px 32px;
+  display:flex; align-items:center; gap:16px;
+}
+.topbar .logo-area{display:flex;align-items:baseline;gap:12px;flex-shrink:0}
+.topbar .logo-area .zishuo{font-size:22px;font-weight:800;color:#fff;letter-spacing:2px}
+.topbar .logo-area .sep{width:1px;height:16px;background:var(--border);align-self:center}
+.topbar .logo-area .sub{font-size:13px;color:var(--text3);font-weight:400;letter-spacing:.5px}
+.topbar .header-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.topbar .header-actions button{
+  font-size:13px;padding:7px 16px;border-radius:20px;cursor:pointer;
+  border:1px solid var(--border);background:var(--card);color:var(--text2);
+  transition:all var(--transition);white-space:nowrap;
+  backdrop-filter:blur(10px);
+}
+.topbar .header-actions button:hover{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.08)}
+.topbar .header-actions button.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 12px var(--accent-glow)}
+
+/* ====== Timeline ====== */
+.timeline-wrap{
+  background:rgba(14,19,33,.65); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);padding:24px 24px;
+  position:sticky;top:70px;z-index:99;
+}
+.timeline{
+  display:flex;gap:0;max-width:1100px;margin:0 auto;
+  justify-content:space-between;position:relative;
+}
+.timeline::before{
+  content:'';position:absolute;top:24px;left:9%;right:9%;
+  height:2px;background:var(--border);z-index:0;
+}
+.timeline .progress-line{
+  position:absolute;top:24px;left:9%;height:2px;
+  background:var(--accent);z-index:1;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 10px var(--accent-glow);
+}
+.stage-dot{
+  display:flex;flex-direction:column;align-items:center;cursor:pointer;
+  position:relative;z-index:2;flex:1;min-width:90px;
+  transition:transform .2s;padding:0 4px;
+}
+.stage-dot:hover{transform:translateY(-3px)}
+.stage-dot .circle{
+  width:48px;height:48px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;
+  background:var(--card);color:var(--text3);
+  border:2px solid var(--border);
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}
+.stage-dot.active .circle{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+  box-shadow:0 0 28px var(--accent-glow);
+  animation:activePulse 2.5s ease-in-out infinite;
+}
+.stage-dot.done .circle{
+  background:var(--green);color:#080c14;border-color:var(--green);
+  box-shadow:0 0 18px var(--green-glow);
+}
+@keyframes activePulse{
+  0%,100%{box-shadow:0 0 28px var(--accent-glow)}
+  50%{box-shadow:0 0 44px var(--accent-glow),0 0 64px rgba(59,130,246,.1)}
+}
+.stage-dot .label{font-size:15px;font-weight:600;color:var(--text2);margin-top:12px;text-align:center;white-space:nowrap;transition:color .3s}
+.stage-dot.active .label{color:#fff}
+.stage-dot.done .label{color:var(--green)}
+.stage-dot .sub{font-size:12px;color:var(--text3);margin-top:4px;text-align:center}
+
+/* ====== Main ====== */
+.main{max-width:960px;margin:0 auto;padding:32px 24px 120px;position:relative;z-index:1;scroll-margin-top:210px}
+.stage-panel{display:none}
+.stage-panel.active{display:block;animation:fadeSlideIn .45s cubic-bezier(.4,0,.2,1)}
+@keyframes fadeSlideIn{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ====== Cards ====== */
+.card{
+  background:var(--card); backdrop-filter:blur(24px);
+  border:1px solid var(--border); border-radius:var(--radius);
+  padding:32px 36px; margin-bottom:20px;
+  transition:all var(--transition);
+  position:relative;overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.card:hover{border-color:rgba(255,255,255,.1);background:var(--card-hover);box-shadow:var(--shadow-md)}
+.card:hover::before{opacity:1}
+.card h2{font-size:20px;margin-bottom:6px;color:#fff;font-weight:700;letter-spacing:-.3px}
+.card .subtitle{font-size:14px;color:var(--text2);margin-bottom:26px;line-height:1.65}
+.card h3{font-size:16px;color:#fff;margin:24px 0 12px;font-weight:600}
+
+/* ====== Upload Zone ====== */
+.upload-zone{
+  border:2px dashed rgba(255,255,255,.08);border-radius:var(--radius);
+  padding:48px;text-align:center;cursor:pointer;
+  transition:all var(--transition);
+  background:rgba(255,255,255,.015);
+  position:relative;overflow:hidden;
+}
+.upload-zone::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,var(--accent-glow),transparent 70%);
+  opacity:0;transition:opacity .5s;
+}
+.upload-zone:hover{border-color:var(--accent);background:rgba(59,130,246,.04)}
+.upload-zone:hover::after{opacity:1}
+.upload-zone .icon{font-size:44px;margin-bottom:10px;position:relative;z-index:1}
+.upload-zone .hint{font-size:15px;color:var(--text2);position:relative;z-index:1}
+.upload-zone .hint strong{color:var(--accent)}
+.upload-zone input[type=file]{display:none}
+
+/* ====== Form ====== */
+textarea,.text-input,select{
+  width:100%;padding:14px 16px;border:1px solid var(--border);
+  border-radius:10px;font-size:14px;line-height:1.65;
+  resize:vertical;min-height:120px;font-family:inherit;outline:none;
+  background:rgba(255,255,255,.025);color:var(--text);
+  transition:all var(--transition);
+}
+textarea:focus,.text-input:focus,select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+  background:rgba(255,255,255,.04);
+}
+select{min-height:auto;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b95a5' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;cursor:pointer}
+select option{background:#141c2b;color:#e8ecf1}
+label{font-size:13px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
+
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{
+  padding:11px 28px;border:none;border-radius:24px;
+  font-size:14px;font-weight:600;cursor:pointer;
+  transition:all var(--transition);position:relative;
+  overflow:hidden;letter-spacing:.3px;
+}
+.btn-primary{
+  background:var(--accent);color:#fff;
+  box-shadow:0 2px 16px var(--accent-glow);
+}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 24px var(--accent-glow)}
+.btn-primary:active{transform:translateY(0)}
+.btn-outline{
+  background:transparent;color:var(--text2);
+  border:1px solid var(--border);
+}
+.btn-outline:hover{border-color:var(--accent);color:#fff;background:rgba(59,130,246,.05)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* ====== Tags ====== */
+.tag-group{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.tag{
+  font-size:14px;padding:8px 18px;border-radius:22px;
+  border:1px solid var(--border);cursor:pointer;
+  background:var(--card);color:var(--text2);
+  transition:all var(--transition);user-select:none;
+  backdrop-filter:blur(10px);
+}
+.tag:hover{border-color:var(--accent);color:#fff}
+.tag.selected{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+  box-shadow:0 2px 14px var(--accent-glow);
+}
+
+/* ====== Result Box ====== */
+.result-box{
+  background:rgba(0,0,0,.3);border:1px solid var(--border);
+  border-radius:12px;padding:22px;margin-top:18px;
+  display:none;font-size:14px;line-height:1.75;
+  white-space:pre-wrap;word-break:break-word;
+  animation:fadeSlideIn .35s ease;
+}
+.result-box.show{display:block}
+.result-box.loading{color:var(--text2);text-align:center;padding:32px}
+
+/* ====== Loading ====== */
+.lds{display:inline-flex;gap:6px;align-items:center}
+.lds span{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:ldsBounce 1.2s ease-in-out infinite}
+.lds span:nth-child(2){animation-delay:.15s;opacity:.6}
+.lds span:nth-child(3){animation-delay:.3s;opacity:.4}
+@keyframes ldsBounce{0%,80%,100%{transform:scale(.5);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+/* ====== File Tags ====== */
+.file-tags-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.file-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 14px;border-radius:16px;
+  background:rgba(96,165,250,.1);color:var(--blue);
+  font-size:13px;cursor:pointer;border:1px solid rgba(96,165,250,.15);
+  transition:all var(--transition);
+}
+.file-tag:hover{background:rgba(96,165,250,.18);border-color:var(--blue)}
+.file-tag .rm{color:var(--accent);font-weight:700;cursor:pointer;margin-left:3px}
+.file-tag .rm:hover{color:#ef4444}
+
+/* ====== Channel Cards ====== */
+.channel-card{
+  padding:20px 22px;border-radius:12px;border:1px solid var(--border);
+  transition:all var(--transition);background:rgba(255,255,255,.015);
+  position:relative;overflow:hidden;
+}
+.channel-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:3px;transition:width .3s;
+}
+.channel-card:hover{background:rgba(255,255,255,.03);transform:translateY(-2px)}
+.channel-card.c1::before{background:var(--green)}
+.channel-card.c2::before{background:var(--accent)}
+.channel-card.c3::before{background:var(--amber)}
+.channel-card strong{display:block;margin-bottom:6px;font-size:15px;color:#fff}
+.channel-card small{color:var(--text2);line-height:1.65;font-size:13px}
+.channel-card a{color:var(--accent);text-decoration:none;font-size:13px;margin-top:8px;display:inline-block;font-weight:500}
+
+/* ====== Step Grid ====== */
+.step-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.step-item{
+  background:rgba(255,255,255,.02);border:1px solid var(--border);
+  border-radius:12px;padding:16px 12px;text-align:center;
+  transition:all var(--transition);
+}
+.step-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)}
+.step-item .step-num{font-size:24px;font-weight:800;color:var(--accent);display:block}
+.step-item .step-text{font-size:13px;color:var(--text2);margin-top:6px}
+
+/* ====== Etiquette Boxes ====== */
+.etiquette-box{
+  padding:18px 20px;border-radius:12px;font-size:14px;line-height:2;
+  transition:all var(--transition);
+}
+.etiquette-box.good{background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.12)}
+.etiquette-box.bad{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.1)}
+.etiquette-box ul{margin-top:8px;padding-left:20px}
+.etiquette-box li{margin-bottom:3px}
+
+/* ====== Email Table ====== */
+.email-table{width:100%;font-size:14px;border-collapse:collapse;margin-top:10px}
+.email-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.email-table td:first-child{color:var(--accent);font-weight:600;width:95px;white-space:nowrap}
+.email-table code{background:rgba(96,165,250,.12);color:var(--blue);padding:3px 10px;border-radius:5px;font-size:13px}
+
+/* ====== Chat Float ====== */
+.chat-float{
+  position:fixed;bottom:36px;right:36px;
+  width:60px;height:60px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;cursor:pointer;
+  font-size:26px;box-shadow:0 8px 32px var(--accent-glow);
+  z-index:200;transition:all var(--transition);
+  display:flex;align-items:center;justify-content:center;
+}
+.chat-float:hover{transform:scale(1.08);box-shadow:0 12px 44px var(--accent-glow)}
+
+/* ====== Chat Drawer ====== */
+.chat-drawer{
+  position:fixed;bottom:112px;right:36px;
+  width:420px;height:560px;
+  background:rgba(14,19,33,.97);backdrop-filter:blur(32px) saturate(180%);
+  border-radius:20px;border:1px solid var(--border);
+  box-shadow:0 24px 80px rgba(0,0,0,.55);
+  display:none;flex-direction:column;z-index:199;overflow:hidden;
+}
+.chat-drawer.open{display:flex;animation:scaleUp .28s cubic-bezier(.4,0,.2,1)}
+@keyframes scaleUp{
+  from{opacity:0;transform:translateY(24px) scale(.95)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.chat-drawer .chat-header{
+  background:rgba(255,255,255,.03);padding:16px 20px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);
+}
+.chat-drawer .chat-header .close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:20px;margin-left:auto;transition:color .2s}
+.chat-drawer .chat-header .close:hover{color:#fff}
+.chat-drawer .chat-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.chat-drawer .chat-body::-webkit-scrollbar{width:4px}
+.chat-drawer .chat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.chat-drawer .chat-msg{max-width:85%;padding:11px 16px;border-radius:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.chat-drawer .chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.chat-drawer .chat-msg.bot{align-self:flex-start;background:rgba(255,255,255,.05);color:var(--text);border-bottom-left-radius:4px;border:1px solid var(--border)}
+.chat-drawer .chat-msg.system{align-self:center;background:none;color:var(--text3);font-size:13px;text-align:center}
+
+.chat-drawer .chat-input-row{display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border);background:rgba(0,0,0,.25)}
+.chat-drawer .chat-input-row input{
+  flex:1;padding:10px 18px;border:1px solid var(--border);
+  border-radius:24px;font-size:14px;outline:none;
+  background:rgba(255,255,255,.03);color:var(--text);
+}
+.chat-drawer .chat-input-row input:focus{border-color:var(--accent)}
+.chat-drawer .chat-input-row button{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;
+  cursor:pointer;font-size:18px;flex-shrink:0;
+  transition:all var(--transition);
+}
+.chat-drawer .chat-input-row button:hover{background:var(--accent2)}
+
+/* ====== Modal ====== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
+  z-index:300;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:rgba(14,19,33,.98);border:1px solid var(--border);
+  border-radius:20px;padding:32px;max-width:460px;width:90%;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+}
+.modal h3{color:#fff;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--text2);margin-bottom:18px}
+.modal input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:rgba(255,255,255,.03);color:var(--text);outline:none}
+.modal input:focus{border-color:var(--accent)}
+
+/* ====== Responsive ====== */
+@media(max-width:768px){
+  .timeline-wrap{padding:16px 8px;overflow-x:auto}
+  .timeline{min-width:680px;padding:0 12px}
+  .stage-dot{min-width:72px}
+  .stage-dot .circle{width:38px;height:38px;font-size:14px}
+  .stage-dot .label{font-size:12px}
+  .stage-dot .sub{font-size:10px}
+  .timeline::before{top:19px}
+  .timeline .progress-line{top:19px}
+  .topbar{padding:12px 18px}
+  .topbar .logo-area .zishuo{font-size:18px}
+  .main{padding:24px 14px 110px}
+  .card{padding:22px 18px}
+  .chat-float{bottom:22px;right:18px;width:52px;height:52px;font-size:22px}
+  .chat-drawer{width:calc(100vw - 16px);right:8px;bottom:84px;height:65vh}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orb o1"></div><div class="bg-orb o2"></div><div class="bg-orb o3"></div>
+
+<!-- ====== Top Bar ====== -->
+<div class="topbar">
+  <div class="logo-area">
+    <span class="zishuo">职说</span>
+    <span class="sep"></span>
+    <span class="sub">老H · 你的求职陪练</span>
+  </div>
+  <div class="header-actions">
+    <button id="headerTokenBtn" onclick="openTokenModal()">🔑 Token</button>
+    <button id="headerModeBtn" class="active" onclick="toggleStreamMode()">⚡ 流式</button>
+  </div>
+</div>
+
+<!-- ====== Timeline ====== -->
+<div class="timeline-wrap">
+  <div class="timeline" id="timeline">
+    <div class="progress-line" id="progressLine" style="width:4%"></div>
+    <div class="stage-dot active" data-stage="0">
+      <div class="circle">1</div><div class="label">做简历</div><div class="sub">上传诊断</div>
+    </div>
+    <div class="stage-dot" data-stage="1">
+      <div class="circle">2</div><div class="label">找机会</div><div class="sub">渠道 & 投递</div>
+    </div>
+    <div class="stage-dot" data-stage="2">
+      <div class="circle">3</div><div class="label">接通知</div><div class="sub">电话应对</div>
+    </div>
+    <div class="stage-dot" data-stage="3">
+      <div class="circle">4</div><div class="label">备面试</div><div class="sub">介绍 & 形象</div>
+    </div>
+    <div class="stage-dot" data-stage="4">
+      <div class="circle">5</div><div class="label">过面试</div><div class="sub">题库 & 举止</div>
+    </div>
+    <div class="stage-dot" data-stage="5">
+      <div class="circle">6</div><div class="label">谈薪资</div><div class="sub">博弈 & 入职</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Main ====== -->
+<div class="main" id="main">
+
+  <!-- Stage 1 -->
+  <div class="stage-panel active" id="panel0">
+    <div class="card">
+      <h2>📋 简历诊断</h2>
+      <p class="subtitle">上传简历，老H逐项帮你看——命名、排版、结构、经历表达。HR怎么看，我就怎么告诉你。</p>
+      <div class="upload-zone" id="resumeUploadZone" onclick="document.getElementById('resumeFileInput').click()">
+        <div class="icon">📄</div>
+        <div class="hint">点击上传简历，或拖拽到此处<br><strong>支持 PDF / Word / TXT</strong></div>
+        <input type="file" id="resumeFileInput" accept=".pdf,.doc,.docx,.txt" onchange="handleResumeUpload(event)" />
+      </div>
+      <div class="file-tags-row" id="resumeFileTag"></div>
+      <textarea class="text-input" id="resumeTextInput" placeholder="或者直接把简历文字粘贴到这里..." style="margin-top:14px;min-height:80px"></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="diagnoseResume()">开始诊断</button>
+        <button class="btn btn-outline" onclick="clearResume()">清空</button>
+      </div>
+      <div class="result-box" id="resumeResult"></div>
+    </div>
+  </div>
+
+  <!-- Stage 2 -->
+  <div class="stage-panel" id="panel1">
+    <div class="card">
+      <h2>📱 主流招聘渠道</h2>
+      <p class="subtitle">不同 App 适合不同岗位，选对渠道少走一半弯路。</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px">
+        <div class="channel-card c1"><strong>💬 Boss直聘</strong><small>直聊模式，中小企业多，回复最快。适合互联网、电商、服务业。<br>⚠️ 在线简历完整度影响"活跃度"曝光排名</small><a href="https://www.zhipin.com" target="_blank">去官网 →</a></div>
+        <div class="channel-card c2"><strong>🏢 智联招聘</strong><small>大企业多，校招岗位集中。适合制造业、金融、国企。<br>⚠️ HR可按学历筛选，简历关键词要写全</small><a href="https://www.zhaopin.com" target="_blank">去官网 →</a></div>
+        <div class="channel-card c3"><strong>🌐 前程无忧</strong><small>外企和传统行业多。适合外企、汽车、快消、医药。<br>⚠️ HR习惯关键词搜索，多放行业词</small><a href="https://www.51job.com" target="_blank">去官网 →</a></div>
+      </div>
+      <p style="font-size:13px;color:var(--text3);margin-top:16px">💡 建议至少注册两个平台，同时关注目标公司的官网 / 公众号「加入我们」——竞争者更少。</p>
+    </div>
+    <div class="card">
+      <h2>⏰ 投递黄金时间</h2>
+      <p class="subtitle">HR 看简历有固定节奏，摸准了事半功倍。</p>
+      <div class="step-grid">
+        <div class="step-item"><span class="step-num">📅</span><span class="step-text"><strong>周二 ~ 周四</strong><br>HR 集中筛选</span></div>
+        <div class="step-item"><span class="step-num">🕤</span><span class="step-text"><strong>上午 9:30 – 11:00</strong><br>黄金投递窗口</span></div>
+        <div class="step-item"><span class="step-num">🚫</span><span class="step-text"><strong>避开周一上午</strong><br>HR 在开会</span></div>
+        <div class="step-item"><span class="step-num">🚫</span><span class="step-text"><strong>避开周五下午</strong><br>HR 在写周报</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>✉️ 打招呼 & 邮件模板</h2>
+      <p class="subtitle">HR 一天收到几十条消息，你的能不能让人点进去？</p>
+      <h3>📱 Boss直聘打招呼</h3>
+      <div class="etiquette-box bad" style="margin-bottom:10px"><strong style="color:#ef4444">❌ 别发：</strong>"您好，看到贵公司招聘，想跟您聊一聊"<br><small style="color:var(--text3)">← 没信息量，HR 划走</small></div>
+      <div class="etiquette-box good"><strong style="color:var(--green)">✅ 发这个：</strong>"您好，我是 XX 学院 XX 专业应届生，在校期间独立运营过公众号（从 0 到 2000 粉），看到贵司在招新媒体运营，想跟您聊聊。"<br><small style="color:var(--text3)">← 我是谁 + 能做什么 + 具体数字</small></div>
+      <h3>📧 邮箱投递</h3>
+      <table class="email-table">
+        <tr><td>邮件标题</td><td><code>姓名_学校_求职岗位_手机号</code><br><small style="color:var(--text3)">别写「个人简历」，不方便搜索</small></td></tr>
+        <tr><td>正文三段式</td><td>① 你是谁 + 应聘什么 + 从哪看到的<br>② 为什么适合（2-3 句，紧扣 JD）<br>③ 联系方式 + 期待回复<br><small style="color:var(--text3)">千万别正文空白只挂附件</small></td></tr>
+        <tr><td>附件</td><td>PDF 格式（不用 Word！手机打开排版乱）<br>命名为 <code>姓名_求职岗位_简历.pdf</code></td></tr>
+        <tr><td>小技巧</td><td>抄送自己——确认发出去了，也方便留底</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>⚠️ 投递避坑清单</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px">
+        <div class="etiquette-box bad"><strong>🚫 同一公司投多个岗位</strong><br><small>HR 后台看得到你所有投递记录，投了运营又投销售 →「这人不知道想干什么」，全部 pass。</small></div>
+        <div class="etiquette-box bad"><strong>🚫 识别「常年挂岗」</strong><br><small>挂了 3 个月以上、公司和岗位描述明显不匹配 → 大概率不是真招人，囤简历用的。</small></div>
+        <div class="etiquette-box good"><strong>💡 已读不回？别内耗</strong><br><small>最常见原因：一眼不匹配 / 已面到合适的人了。真合适 HR 会追着你打。</small></div>
+        <div class="etiquette-box good"><strong>💡 内推怎么找</strong><br><small>脉脉 / 小红书搜「公司 + 内推」，找学长学姐。内推 = 简历被 HR 优先看到，不是走后门。</small></div>
+      </div>
+      <button class="btn btn-outline" style="margin-top:18px" onclick="openChat('关于投简历，还有什么要注意的？')">问老H更多细节</button>
+    </div>
+  </div>
+
+  <!-- Stage 3 -->
+  <div class="stage-panel" id="panel2">
+    <div class="card">
+      <h2>📞 面试电话 · 9 步法</h2>
+      <p class="subtitle">面试不是从你进门开始，从你接起这通电话就开始了。</p>
+      <div class="step-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="step-item"><span class="step-num">1</span><span class="step-text"><strong>铃响三声</strong><br>不急不慢接起来</span></div>
+        <div class="step-item"><span class="step-num">2</span><span class="step-text"><strong>先问好</strong><br>"您好"不是"喂"</span></div>
+        <div class="step-item"><span class="step-num">3</span><span class="step-text"><strong>自报家门</strong><br>"我是 XXX"</span></div>
+        <div class="step-item"><span class="step-num">4</span><span class="step-text"><strong>弄清来者</strong><br>哪个公司什么岗位</span></div>
+        <div class="step-item"><span class="step-num">5</span><span class="step-text"><strong>再次打招呼</strong><br>"王经理您好"</span></div>
+        <div class="step-item"><span class="step-num">6</span><span class="step-text"><strong>正式会谈</strong><br>认真听 + 记 + 复述</span></div>
+        <div class="step-item"><span class="step-num">7</span><span class="step-text"><strong>复述要点</strong><br>"周三下午 2 点…"</span></div>
+        <div class="step-item"><span class="step-num">8</span><span class="step-text"><strong>祝福告别</strong><br>"谢谢，祝工作顺利"</span></div>
+        <div class="step-item"><span class="step-num">9</span><span class="step-text"><strong>后放话筒</strong><br>等对方先挂</span></div>
+      </div>
+      <button class="btn btn-outline" style="margin-top:18px" onclick="openChat('HR打电话来通知面试，我应该注意什么？')">问老H聊聊细节</button>
+    </div>
+  </div>
+
+  <!-- Stage 4 -->
+  <div class="stage-panel" id="panel3">
+    <div class="card">
+      <h2>✏️ 自我介绍分析</h2>
+      <p class="subtitle">把你准备好的自我介绍贴进来，老H逐句帮你看。</p>
+      <textarea class="text-input" id="introTextInput" placeholder="把你的自我介绍文字粘贴到这里...
+
+例如：我是 XXX，XX 学校 XX 专业应届生，应聘贵公司的 XX 岗位..."></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="analyzeIntro()">开始分析</button>
+        <button class="btn btn-outline" onclick="clearIntro()">清空</button>
+      </div>
+      <div class="result-box" id="introResult"></div>
+    </div>
+    <div class="card">
+      <h2>👔 面试穿搭速查</h2>
+      <p class="subtitle">不知道穿什么？选岗位，老H告诉你底线和加分项。</p>
+      <div class="tag-group" id="dressTags">
+        <span class="tag" onclick="selectDressTag(this,'tech')">🔧 工厂 / 技术岗</span>
+        <span class="tag" onclick="selectDressTag(this,'office')">💼 办公室 / 文职</span>
+        <span class="tag" onclick="selectDressTag(this,'sales')">📞 销售 / 市场</span>
+        <span class="tag" onclick="selectDressTag(this,'general')">🎯 通用建议</span>
+      </div>
+      <div class="result-box" id="dressResult"></div>
+    </div>
+  </div>
+
+  <!-- Stage 5 -->
+  <div class="stage-panel" id="panel4">
+    <div class="card">
+      <h2>🃏 面试题库</h2>
+      <p class="subtitle">选你怕的题型，随机抽题。每道题：面试官意图 + HR 内心 OS + 安全回答 + 踩坑示范。</p>
+      <div class="tag-group" id="quizTypeTags">
+        <span class="tag" onclick="selectQuizTag(this,'陷阱题')">🪤 陷阱题</span>
+        <span class="tag" onclick="selectQuizTag(this,'压力题')">💪 压力题</span>
+        <span class="tag" onclick="selectQuizTag(this,'自我介绍')">🙋 自我介绍</span>
+        <span class="tag" onclick="selectQuizTag(this,'STAR')">⭐ STAR 追问</span>
+        <span class="tag" onclick="selectQuizTag(this,'全部随机')">🎲 全部随机</span>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="drawQuestions()">抽 3 道题</button></div>
+      <div class="result-box" id="quizResult"></div>
+    </div>
+    <div class="card">
+      <h2>🎯 面试举止红黑榜</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="etiquette-box bad"><strong style="color:#ef4444">🔴 扣分动作</strong><ul><li>抖腿 / 转笔 / 摸头发</li><li>双手交叉抱胸</li><li>翘二郎腿</li><li>看手机（哪怕一眼）</li><li>回答看天花板</li><li>叹气 / 打断面试官</li></ul></div>
+        <div class="etiquette-box good"><strong style="color:var(--green)">🟢 加分动作</strong><ul><li>进门微笑点头致意</li><li>双手递简历</li><li>坐前 2/3，腰背挺直</li><li>离场椅子归位</li><li>带走水杯，退两步转身</li><li>面试后发感谢信息</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 6 -->
+  <div class="stage-panel" id="panel5">
+    <div class="card">
+      <h2>💰 薪资测算 & 谈判</h2>
+      <p class="subtitle">城市 × 行业 × 学历 = 你的合理薪资区间。算出来再教你怎么开口谈。</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div><label>城市</label><select id="salaryCity"><option value="">请选择</option><option>北京</option><option>上海</option><option>深圳</option><option>广州</option><option>杭州</option><option>成都</option><option>武汉</option><option>南京</option><option>西安</option><option>郑州</option><option>长沙</option><option>重庆</option><option>苏州</option><option>其他</option></select></div>
+        <div><label>行业</label><select id="salaryIndustry"><option value="">请选择</option><option>互联网/IT</option><option>制造业</option><option>金融</option><option>教育</option><option>电商/零售</option><option>医疗</option><option>物流</option><option>广告/传媒</option><option>客服/行政</option><option>销售</option><option>其他</option></select></div>
+        <div><label>学历</label><select id="salaryEdu"><option>大专</option><option>本科</option><option>硕士</option></select></div>
+        <div><label>岗位类型</label><select id="salaryJobType"><option>非技术岗</option><option>技术岗</option><option>销售岗</option></select></div>
+      </div>
+      <button class="btn btn-primary" onclick="calcSalary()">测算薪资</button>
+      <div class="result-box" id="salaryResult"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ====== Token Modal ====== -->
+<div class="modal-overlay" id="tokenModal">
+  <div class="modal">
+    <h3>🔑 设置 Coze API Token</h3>
+    <p>个人访问令牌，支持 pat_ / cztei_ 开头</p>
+    <input type="password" id="tokenInput" placeholder="粘贴 Token..." />
+    <p id="tokenStatus" style="font-size:13px;color:var(--green);margin-top:12px"></p>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeTokenModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveToken()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Chat ====== -->
+<button class="chat-float" id="chatFloatBtn" onclick="toggleChat()" title="随时问老H">💬</button>
+<div class="chat-drawer" id="chatDrawer">
+  <div class="chat-header">
+    <div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700">H</div>
+    <div><strong style="color:#fff">老H</strong><br><small style="color:var(--text3)">随时问</small></div>
+    <button class="close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="chat-msg system">👋 简历、面试、薪资——想问什么直接说。</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="输入消息..." onkeydown="if(event.key==='Enter')sendChat()" />
+    <button onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+// ============ Globals ============
+const BOT_ID='7645516534542549030', API_BASE='https://api.coze.cn/v3';
+let apiToken=localStorage.getItem('coze_token')||'', streamMode=true, currentStage=0;
+let fileHistory=[], selectedQuizType='全部随机';
+
+(function init(){
+  if(apiToken){
+    var b=document.getElementById('headerTokenBtn');
+    b.textContent='🔑 Token ✓';b.style.background='rgba(34,197,94,.12)';b.style.borderColor='var(--green)';b.style.color='var(--green)';
+  }
+})();
+
+// ============ Stage Switch ============
+document.getElementById('timeline').addEventListener('click',function(e){
+  var dot=e.target.closest('.stage-dot');if(!dot)return;
+  switchStage(parseInt(dot.dataset.stage));
+});
+function switchStage(n){
+  currentStage=n;
+  document.querySelectorAll('.stage-dot').forEach(function(d,i){
+    d.className='stage-dot';if(i===n)d.classList.add('active');else if(i<n)d.classList.add('done');
+  });
+  document.querySelectorAll('.stage-panel').forEach(function(p,i){p.classList.toggle('active',i===n)});
+  var pct=n===0?4:Math.min((n/5)*100,100);
+  document.getElementById('progressLine').style.width=pct+'%';
+  document.getElementById('main').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ============ Token ============
+function openTokenModal(){document.getElementById('tokenModal').classList.add('open')}
+function closeTokenModal(){document.getElementById('tokenModal').classList.remove('open')}
+function saveToken(){
+  var v=document.getElementById('tokenInput').value.trim();if(!v)return;
+  var m=v.match(/Bearer[:\s]+([A-Za-z0-9_-]+)/);apiToken=m?m[1]:v;
+  localStorage.setItem('coze_token',apiToken);
+  document.getElementById('tokenStatus').textContent='✅ Token 已保存';
+  setTimeout(closeTokenModal,800);
+}
+
+// ============ Stream ============
+function toggleStreamMode(){
+  streamMode=!streamMode;
+  var b=document.getElementById('headerModeBtn');
+  b.textContent=streamMode?'⚡ 流式':'⏳ 非流式';
+  b.className=streamMode?'active':'';
+}
+
+// ============ Coze API ============
+function ensureToken(){if(!apiToken){alert('请先设置Token');return false}return true}
+
+async function callCoze(msg,fileIds,boxId,onStream){
+  if(!ensureToken())return;
+  var mb;
+  if(fileIds&&fileIds.length){
+    var p=[{type:'text',text:msg}];fileIds.forEach(function(f){p.push({type:'file',file_id:f})});
+    mb={role:'user',content:JSON.stringify(p),content_type:'object_string'};
+  }else{mb={role:'user',content:msg,content_type:'text'}}
+  var box=document.getElementById(boxId);
+  if(box){box.classList.add('show');box.innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--text2);padding:8px 0"><span class="lds"><span></span><span></span><span></span></span> 正在分析…</div>'}
+  try{if(streamMode)await callCozeStream(mb,boxId,onStream);else await callCozeNonStream(mb,boxId);}
+  catch(e){if(box)box.innerHTML='❌ '+e.message}
+}
+
+async function callCozeStream(mb,boxId,cb){
+  var res=await fetch(API_BASE+'/chat',{method:'POST',
+    headers:{'Authorization':'Bearer '+apiToken,'Content-Type':'application/json'},
+    body:JSON.stringify({bot_id:BOT_ID,user_id:'lao_h_app',stream:true,auto_save_history:true,additional_messages:[mb]})
+  });
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  var reader=res.body.getReader(),decoder=new TextDecoder(),buf='',txt='',et='',box=document.getElementById(boxId);
+  while(true){
+    var c=await reader.read();if(c.done)break;
+    buf+=decoder.decode(c.value,{stream:true});var ls=buf.split('\n');buf=ls.pop()||'';
+    for(var i=0;i<ls.length;i++){
+      var l=ls[i].trim();
+      if(l.startsWith('event:')){et=l.substring(6).trim();continue}
+      if(!l.startsWith('data:'))continue;var d=l.substring(5).trim();if(d==='[DONE]')continue;
+      try{var ev=JSON.parse(d);
+        if(et==='conversation.message.delta'&&ev.type==='answer'){txt+=ev.content||'';if(box&&txt.length>10)box.innerHTML=renderMD(txt);if(cb)cb(ev.content||'')}
+        if(et==='conversation.chat.failed')throw new Error(d);
+      }catch(e2){if(e2.message&&e2.message.indexOf('conversation')===-1)throw e2}
+    }
+  }
+  if(box)box.innerHTML=txt?renderMD(txt):'(未收到内容)';
+}
+
+async function callCozeNonStream(mb,boxId){
+  var cr=await fetch(API_BASE+'/chat',{method:'POST',
+    headers:{'Authorization':'Bearer '+apiToken,'Content-Type':'application/json'},
+    body:JSON.stringify({bot_id:BOT_ID,user_id:'lao_h_app',stream:false,auto_save_history:true,additional_messages:[mb]})
+  });
+  var cd=await cr.json();if(cd.code!==0)throw new Error(cd.msg);
+  for(var i=0;i<60;i++){if(i>0)await new Promise(function(r){setTimeout(r,1000)});
+    var rr=await fetch(API_BASE+'/chat/retrieve?conversation_id='+cd.data.conversation_id+'&chat_id='+cd.data.id,{headers:{'Authorization':'Bearer '+apiToken}});
+    var rd=await rr.json();if(rd.code===0&&rd.data.status==='completed')break;
+  }
+  var mr=await fetch(API_BASE+'/chat/message/list?conversation_id='+cd.data.conversation_id+'&chat_id='+cd.data.id,{headers:{'Authorization':'Bearer '+apiToken}});
+  var md=await mr.json(),parts=[];(md.data||[]).forEach(function(m){if(m.type==='answer')parts.push(m.content)});
+  var box=document.getElementById(boxId);if(box)box.innerHTML=renderMD(parts.join(''))||'(空)';
+}
+
+// ============ Markdown ============
+function renderMD(text){
+  if(!text)return'<span style="color:var(--text3)">…</span>';
+  try{
+    var h=text;h=h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    h=h.replace(/^### (.+)$/gm,'<h4 style="margin:16px 0 8px;color:#fff">$1</h4>');
+    h=h.replace(/^## (.+)$/gm,'<h3 style="margin:18px 0 10px;color:#fff">$1</h3>');
+    h=h.replace(/\*\*(.+?)\*\*/g,'<strong style="color:#fff">$1</strong>');
+    h=h.replace(/`([^`]+)`/g,'<code style="background:rgba(96,165,250,.15);color:#60a5fa;padding:2px 8px;border-radius:4px;font-size:.9em">$1</code>');
+    h=h.replace(/^- (.+)$/gm,'<li style="margin-left:22px;list-style:disc">$1</li>');
+    h=h.replace(/^\d+\. (.+)$/gm,'<li style="margin-left:22px;list-style:decimal">$1</li>');
+    h=h.replace(/^---$/gm,'<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">');
+    h=h.replace(/\n\n/g,'<br><br>');h=h.replace(/\n/g,'<br>');
+    return h;
+  }catch(e){return text.replace(/\n/g,'<br>')}
+}
+
+// ============ File ============
+function handleResumeUpload(e){
+  var f=e.target.files[0];if(!f||!ensureToken())return;
+  var fd=new FormData();fd.append('file',f);
+  fetch('https://api.coze.cn/v1/files/upload',{method:'POST',headers:{'Authorization':'Bearer '+apiToken},body:fd})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.code===0){fileHistory.push({id:d.data.id,name:f.name});renderFileTags()}
+    });
+}
+function renderFileTags(){
+  document.getElementById('resumeFileTag').innerHTML=fileHistory.map(function(f,i){
+    return '<span class="file-tag">📎'+f.name+'<span class="rm" onclick="event.stopPropagation();removeFile('+i+')">&times;</span></span>';
+  }).join('');
+}
+function removeFile(i){fileHistory.splice(i,1);renderFileTags()}
+
+// ============ Stage 1 ============
+function diagnoseResume(){
+  var t=document.getElementById('resumeTextInput').value.trim();
+  if(!t&&!fileHistory.length){alert('请上传文件或粘贴文字');return}
+  var p='你是老H，基于15年HR经验，严格按照以下框架逐项诊断这份简历。每项必须给出评分和**改写示例**：\n\n';
+  p+='【1. 文件命名 - 权重10%】PPT规则：手机号_姓名_求职岗位.pdf。手机号放最前面（数字排序置顶，HR不打开就能联系），用下划线_不用短横线-。\n';
+  p+='【2. 排版与篇幅 - 权重10%】字号≥小四(14pt)，五号字(12pt)太小直接扣分。行距不能太密（HR就看10-15秒）。篇幅1-2页，应届生尽量1页。PDF格式。\n';
+  p+='【3. 六结构完整度 - 权重15%】基本信息/自我评价/实习经历/教育背景/专业能力/兴趣爱好。缺哪个？优势项放前面。\n';
+  p+='【4. 基本信息 - 权重10%】写22岁不写出生日期。白底/蓝底职业照。籍贯要写。党员/预备党员必须写。微信昵称/头像/邮箱签名是否正式？\n';
+  p+='【5. 自我评价 - 权重15%】PPT三要素缺一不可：①个人品质（覆盖生活和工作）②求职匹配（具备XX能力胜任XX工作）③职场稳定（未来希望在XX行业/岗位长期发展）。\n';
+  p+='【6. 经历表达 - 权重25%】每段经历四要素：公司岗位→负责模块→具体做了什么→结果或价值。有没有数字？用三技巧检查：①相对值不绝对值②突出稀缺性③强调持续性。没数字的逐条标出给改写示例。\n';
+  p+='【7. 证书与能力 - 权重5%】驾照/普通话证/教师资格证/计算机等级证写了没？\n';
+  p+='【8. 爱好门道 - 权重5%】至少2-3项，至少一项团队型。\n';
+  p+='【9. 简历质量9条终检】PPT slide90。\n';
+  p+='【10. 总评分+修改优先级】先改什么→再改什么→最后改什么。\n\n要求：每项评分+问题+改写示例。说人话。"HR看到这个，心里想的是XX"。';
+  callCoze(p+(t||'请分析上传的简历'),fileHistory.map(function(f){return f.id}),'resumeResult');
+}
+function clearResume(){
+  document.getElementById('resumeTextInput').value='';document.getElementById('resumeFileInput').value='';
+  fileHistory=[];renderFileTags();var b=document.getElementById('resumeResult');b.classList.remove('show');b.innerHTML='';
+}
+
+// ============ Stage 4 ============
+function analyzeIntro(){
+  var t=document.getElementById('introTextInput').value.trim();
+  if(!t){alert('请粘贴自我介绍文字');return}
+  callCoze('请逐句分析以下自我介绍，给出：字数/时长估算、结构评分、减分项扫描、逐句修改建议和完整改写版本。\n\n自我介绍：\n'+t,null,'introResult');
+}
+function clearIntro(){document.getElementById('introTextInput').value='';var b=document.getElementById('introResult');b.classList.remove('show');b.innerHTML=''}
+function selectDressTag(el,type){
+  el.parentElement.querySelectorAll('.tag').forEach(function(t){t.classList.remove('selected')});
+  el.classList.add('selected');
+  var p={tech:'工厂/技术岗面试穿搭建议',office:'办公室/文职岗面试穿搭建议',sales:'销售/市场岗面试穿搭建议',general:'大专应届生面试通用穿搭建议+前一晚检查清单'};
+  callCoze('我是大专应届生，'+p[type],null,'dressResult');
+}
+
+// ============ Stage 5 ============
+function selectQuizTag(el,type){el.parentElement.querySelectorAll('.tag').forEach(function(t){t.classList.remove('selected')});el.classList.add('selected');selectedQuizType=type}
+function drawQuestions(){callCoze('我是一名大专应届生，请从'+selectedQuizType+'中随机抽取3道面试题。每道题给出：🎯题目、🔍面试官真实意图、💭HR内心OS、✅安全回答模板、❌常见踩坑。用老H的语气。',null,'quizResult')}
+
+// ============ Stage 6 ============
+function calcSalary(){
+  var city=document.getElementById('salaryCity').value,industry=document.getElementById('salaryIndustry').value;
+  var edu=document.getElementById('salaryEdu').value,jobType=document.getElementById('salaryJobType').value;
+  if(!city||!industry){alert('请选择城市和行业');return}
+  callCoze('我是'+edu+'学历，在'+city+'找'+industry+'行业的'+jobType+'工作。请帮我：1.分析合理薪资区间 2.数字怎么来的 3.月薪vs年收入差距 4.面试怎么开口谈薪资（两个话术模板）5.老H特别提醒。',null,'salaryResult');
+}
+
+// ============ Chat ============
+function toggleChat(){document.getElementById('chatDrawer').classList.toggle('open')}
+function openChat(msg){document.getElementById('chatDrawer').classList.add('open');document.getElementById('chatInput').value=msg;document.getElementById('chatInput').focus()}
+async function sendChat(){
+  var input=document.getElementById('chatInput'),text=input.value.trim();
+  if(!text||!ensureToken())return;
+  var body=document.getElementById('chatBody');addChatMsg('user',text);input.value='';
+  var lid=addChatMsg('bot','<div class="lds"><span></span><span></span><span></span></div>');
+  try{
+    if(streamMode){
+      var res=await fetch(API_BASE+'/chat',{method:'POST',headers:{'Authorization':'Bearer '+apiToken,'Content-Type':'application/json'},body:JSON.stringify({bot_id:BOT_ID,user_id:'lao_h_chat',stream:true,auto_save_history:true,additional_messages:[{role:'user',content:text,content_type:'text'}]})});
+      var reader=res.body.getReader(),decoder=new TextDecoder(),buf='',ft='',et='',el=document.getElementById(lid);
+      while(true){var c=await reader.read();if(c.done)break;buf+=decoder.decode(c.value,{stream:true});var ls=buf.split('\n');buf=ls.pop()||'';
+        for(var i=0;i<ls.length;i++){var l=ls[i].trim();if(l.startsWith('event:')){et=l.substring(6).trim();continue}if(!l.startsWith('data:'))continue;var d=l.substring(5).trim();if(d==='[DONE]')continue;
+          try{var ev=JSON.parse(d);if(et==='conversation.message.delta'&&ev.type==='answer'){ft+=ev.content||'';if(el&&ft.length>10)el.innerHTML=renderMD(ft)}}catch(e2){}
+        }
+      }
+      if(el)el.innerHTML=ft?renderMD(ft):'(空)';
+    }else{
+      var cr=await fetch(API_BASE+'/chat',{method:'POST',headers:{'Authorization':'Bearer '+apiToken,'Content-Type':'application/json'},body:JSON.stringify({bot_id:BOT_ID,user_id:'lao_h_chat',stream:false,auto_save_history:true,additional_messages:[{role:'user',content:text,content_type:'text'}]})});
+      var cd=await cr.json();if(cd.code!==0)throw new Error(cd.msg);
+      for(var j=0;j<60;j++){if(j>0)await new Promise(function(r){setTimeout(r,1000)});
+        var rr=await fetch(API_BASE+'/chat/retrieve?conversation_id='+cd.data.conversation_id+'&chat_id='+cd.data.id,{headers:{'Authorization':'Bearer '+apiToken}});
+        var rd=await rr.json();if(rd.code===0&&rd.data.status==='completed')break;
+      }
+      var mr=await fetch(API_BASE+'/chat/message/list?conversation_id='+cd.data.conversation_id+'&chat_id='+cd.data.id,{headers:{'Authorization':'Bearer '+apiToken}});
+      var md=await mr.json(),ap=[];(md.data||[]).forEach(function(m){if(m.type==='answer')ap.push(m.content)});
+      var el2=document.getElementById(lid);if(el2)el2.innerHTML=renderMD(ap.join(''))||'(空)';
+    }
+  }catch(e3){var el3=document.getElementById(lid);if(el3)el3.innerHTML='❌ '+e3.message}
+  document.getElementById('chatBody').scrollTop=document.getElementById('chatBody').scrollHeight;
+}
+function addChatMsg(role,content){
+  var body=document.getElementById('chatBody'),div=document.createElement('div');
+  var id='cm-'+Date.now();div.id=id;div.className='chat-msg '+role;div.innerHTML=content;
+  body.appendChild(div);body.scrollTop=body.scrollHeight;return id;
+}
+</script>
+</body>
+</html>
